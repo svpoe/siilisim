@@ -1,4 +1,6 @@
 import pygame
+import random
+import math
 
 WIDTH = 1000
 HEIGHT = 700
@@ -18,6 +20,10 @@ def main():
     radius = 25
     running = True
 
+    wander_angle = 0.0
+    speed = 80
+
+    random_nudge_timer = 0.0
     while running:
          # Time since the previous frame, in seconds
         dt = clock.tick(FPS) / 1000
@@ -25,15 +31,116 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
-        # Update the position of the hedgehog
+
+        #  # Gradually vary the wandering direction
+        # wander_angle += random.uniform(-1.0, 1.0) * dt
+
+        # wander_direction = pygame.Vector2(
+        #     math.cos(wander_angle),
+        #     math.sin(wander_angle)
+        # )
+        wander_angle += random.uniform(-1.0, 1.0) * dt
+
+        random_nudge_timer += dt
+
+        if random_nudge_timer >= 5.0:
+            wander_angle += random.uniform(
+                -math.pi / 2,
+                math.pi / 2
+            )
+            random_nudge_timer = 0.0
+
+        wander_direction = pygame.Vector2(
+            math.cos(wander_angle),
+            math.sin(wander_angle)
+        )
+
+
+
+        # Start with the wandering influence
+        steering = wander_direction.copy()
+
+        
+
+        # Gradual edge avoidance
+        margin = 200
+        edge_strength = 5.0
+
+        if position.x < margin:
+            closeness = (margin - position.x) / margin
+            steering.x += edge_strength * abs(closeness)
+
+        elif position.x > WIDTH - margin:
+            closeness = (position.x - (WIDTH - margin)) / margin
+            steering.x -= edge_strength * abs(closeness)
+            
+
+        if position.y < margin:
+            closeness = (margin - position.y) / margin
+            steering.y += edge_strength * abs(closeness)
+
+        elif position.y > HEIGHT - margin:
+            closeness = (position.y - (HEIGHT - margin)) / margin
+            steering.y -= edge_strength * abs(closeness)
+
+
+        margin = 200
+        # extra strong avoidance for corners
+        # Top-left corner
+        if position.x < margin and position.y < margin:
+
+            closeness_x = (margin - position.x) / margin
+            closeness_y = (margin - position.y) / margin
+
+            steering.x += 3 * edge_strength * abs(closeness_x)
+            steering.y += 3 * edge_strength * abs(closeness_y)
+
+
+        # Bottom-left corner
+        elif position.x < margin and position.y > HEIGHT - margin:
+
+            closeness_x = (margin - position.x) / margin
+            closeness_y = (position.y - (HEIGHT - margin)) / margin
+
+            steering.x += 3 * edge_strength * abs(closeness_x)
+            steering.y -= 3 * edge_strength * abs(closeness_y)
+
+
+        # Top-right corner
+        elif position.x > WIDTH - margin and position.y < margin:
+
+            closeness_x = (position.x - (WIDTH - margin)) / margin
+            closeness_y = (margin - position.y) / margin
+
+            steering.x -= 3 * edge_strength * abs(closeness_x)
+            steering.y += 3 * edge_strength * abs(closeness_y)
+
+
+        # Bottom-right corner
+        elif position.x > WIDTH - margin and position.y > HEIGHT - margin:
+
+            closeness_x = (position.x - (WIDTH - margin)) / margin
+            closeness_y = (position.y - (HEIGHT - margin)) / margin
+
+            steering.x -= 3 * edge_strength * abs(closeness_x)
+            steering.y -= 3 * edge_strength * abs(closeness_y)
+            
+
+                
+
+        # Convert the combined influences into a desired velocity
+        if steering.length_squared() > 0:
+            desired_velocity = steering.normalize() * speed
+        else:
+            desired_velocity = pygame.Vector2()
+
+        # Smoothly change the current velocity
+        turning_speed = 2.0
+        velocity += (desired_velocity - velocity) * turning_speed * dt
+
+        # Move the hedgehog
         position += velocity * dt
-        
-        #limit the hedgehog to the screen boundaries
-        if position.x - radius < 0 or position.x + radius > WIDTH:
-            velocity.x *= -1    
-        if position.y - radius < 0 or position.y + radius > HEIGHT:
-            velocity.y *= -1
-        
+            
 
 
         screen.fill(GRASS_COLOR)
