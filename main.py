@@ -43,7 +43,7 @@ def main():
 
         random_nudge_timer += dt
 
-        if random_nudge_timer >= 5.0:
+        if random_nudge_timer >= 3.0:
             wander_angle += random.uniform(
                 -math.pi / 2,
                 math.pi / 2
