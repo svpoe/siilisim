@@ -1,3 +1,14 @@
+"""
+Purpose: run and coordinate the world
+- initialize Pygame
+- create the mother, baby, and strawberries
+- process events
+- call each object’s update()
+- call each object’s draw()
+- remove eaten strawberries
+- draw the world
+"""
+
 import pygame
 import random
 import math
@@ -16,17 +27,10 @@ def main():
     pygame.display.set_caption("Hedgehog Simulator")
     clock = pygame.time.Clock()
 
-    # position =pygame.Vector2(WIDTH / 2, HEIGHT / 2)
-    # velocity = pygame.Vector2(100, 60)
-    # radius = 25
-    # running = True
-
-    # wander_angle = 0.0
-    # speed = 80
 
     # random_nudge_timer = 0.0
     mother = Hedgehog(image_path="assets/hedgehog_body.png", position=(WIDTH / 2, HEIGHT / 2))
-    baby= Hedgehog(image_path="assets/hedgehog_body.png", position=(WIDTH / 2 + 50, HEIGHT / 2 + 50))
+    #baby= Hedgehog(image_path="assets/hedgehog_body.png", position=(WIDTH / 2 + 50, HEIGHT / 2 + 50))
     running = True
     while running:
          # Time since the previous frame, in seconds
@@ -37,121 +41,15 @@ def main():
 
         mother.update(dt, WIDTH, HEIGHT)
 
-        baby.update(dt, WIDTH, HEIGHT)
-
-        # wander_angle += random.uniform(-1.0, 1.0) * dt
-
-        # random_nudge_timer += dt
-
-        # if random_nudge_timer >= 3.0:
-        #     wander_angle += random.uniform(
-        #         -math.pi / 2,
-        #         math.pi / 2
-        #     )
-        #     random_nudge_timer = 0.0
-
-        # wander_direction = pygame.Vector2(
-        #     math.cos(wander_angle),
-        #     math.sin(wander_angle)
-        # )
-
-
-
-        # # Start with the wandering influence
-        # steering = wander_direction.copy()
+       #baby.update(dt, WIDTH, HEIGHT)
 
         
-
-        # # Gradual edge avoidance
-        # margin = 200
-        # edge_strength = 5.0
-
-        # if position.x < margin:
-        #     closeness = (margin - position.x) / margin
-        #     steering.x += edge_strength * abs(closeness)
-
-        # elif position.x > WIDTH - margin:
-        #     closeness = (position.x - (WIDTH - margin)) / margin
-        #     steering.x -= edge_strength * abs(closeness)
-            
-
-        # if position.y < margin:
-        #     closeness = (margin - position.y) / margin
-        #     steering.y += edge_strength * abs(closeness)
-
-        # elif position.y > HEIGHT - margin:
-        #     closeness = (position.y - (HEIGHT - margin)) / margin
-        #     steering.y -= edge_strength * abs(closeness)
-
-
-        # margin = 200
-        # # extra strong avoidance for corners
-        # # Top-left corner
-        # if position.x < margin and position.y < margin:
-
-        #     closeness_x = (margin - position.x) / margin
-        #     closeness_y = (margin - position.y) / margin
-
-        #     steering.x += 3 * edge_strength * abs(closeness_x)
-        #     steering.y += 3 * edge_strength * abs(closeness_y)
-
-
-        # # Bottom-left corner
-        # elif position.x < margin and position.y > HEIGHT - margin:
-
-        #     closeness_x = (margin - position.x) / margin
-        #     closeness_y = (position.y - (HEIGHT - margin)) / margin
-
-        #     steering.x += 3 * edge_strength * abs(closeness_x)
-        #     steering.y -= 3 * edge_strength * abs(closeness_y)
-
-
-        # # Top-right corner
-        # elif position.x > WIDTH - margin and position.y < margin:
-
-        #     closeness_x = (position.x - (WIDTH - margin)) / margin
-        #     closeness_y = (margin - position.y) / margin
-
-        #     steering.x -= 3 * edge_strength * abs(closeness_x)
-        #     steering.y += 3 * edge_strength * abs(closeness_y)
-
-
-        # # Bottom-right corner
-        # elif position.x > WIDTH - margin and position.y > HEIGHT - margin:
-
-        #     closeness_x = (position.x - (WIDTH - margin)) / margin
-        #     closeness_y = (position.y - (HEIGHT - margin)) / margin
-
-        #     steering.x -= 3 * edge_strength * abs(closeness_x)
-        #     steering.y -= 3 * edge_strength * abs(closeness_y)
-            
-
-                
-
-        # # Convert the combined influences into a desired velocity
-        # if steering.length_squared() > 0:
-        #     desired_velocity = steering.normalize() * speed
-        # else:
-        #     desired_velocity = pygame.Vector2()
-
-        # # Smoothly change the current velocity
-        # turning_speed = 2.0
-        # velocity += (desired_velocity - velocity) * turning_speed * dt
-
-        # # Move the hedgehog
-        # position += velocity * dt
-            
-
-
-        # screen.fill(GRASS_COLOR)
-        # # Draw the hedgehog (placeholder)
-        # pygame.draw.circle(screen, HEDGEHOG_COLOR, position, radius)
-
-
        
         screen.fill(GRASS_COLOR)
+       
+        screen.blit(pygame.image.load("assets/grass.png"), (0, 0))
         mother.draw(screen)
-        baby.draw(screen)
+        #baby.draw(screen)
         pygame.display.flip()
 
     pygame.quit()   

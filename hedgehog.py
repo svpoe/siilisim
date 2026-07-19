@@ -15,16 +15,31 @@ class Hedgehog:
 
         #adding variables for flipping image
         self.facing_right = False
-        self.flip_timer = 0.0
-        self.flip_delay = 0.5  # seconds to wait before flipping
-        self.dt = 0.0
+        # self.flip_timer = 0.0
+        # self.flip_delay = 0.5  # seconds to wait before flipping
+        # self.dt = 0.0
+        self.facing_right = False
+
+        self.turning = False
+        self.turn_timer = 0.0
+        self.turn_duration = 0.5
+
 
         # New: load your PNG
         self.image = pygame.image.load(image_path).convert_alpha()
 
         # Resize it if needed
         # self.image = pygame.transform.smoothscale(self.image,(100, 65))
-        self.image = pygame.transform.smoothscale(self.image,(200, 130))
+        self.image = pygame.transform.smoothscale(self.image,(100*2, 65*2))
+
+
+
+
+        #load rolled hedgehog
+
+       
+        self.rolled_image = pygame.image.load("assets/hedgehog_rolled.png").convert_alpha()
+        self.rolled_image = pygame.transform.smoothscale(self.rolled_image,(70*2,70*2   ))
 
         # #adding brown shading
 
@@ -198,17 +213,35 @@ class Hedgehog:
         ) * turning_speed * dt
 
 
-        #turnign behavior 
+        # #turnign behavior 
+        # desired_right = self.velocity.x > 2
+
+        # if desired_right != self.facing_right:
+        #     self.flip_timer += dt
+
+        #     if self.flip_timer >= self.flip_delay:
+        #         self.facing_right = desired_right
+        #         self.flip_timer = 0.0
+        # else:
+        #     self.flip_timer = 0.0
         desired_right = self.velocity.x > 2
 
-        if desired_right != self.facing_right:
-            self.flip_timer += dt
+        # Start a turn
+        if (
+            desired_right != self.facing_right
+            and not self.turning
+        ):
+            self.turning = True
+            self.turn_timer = 0.0
+            self.next_direction = desired_right
 
-            if self.flip_timer >= self.flip_delay:
-                self.facing_right = desired_right
-                self.flip_timer = 0.0
-        else:
-            self.flip_timer = 0.0
+        # Continue the turn
+        if self.turning:
+            self.turn_timer += dt
+
+            if self.turn_timer >= self.turn_duration:
+                self.turning = False
+                self.facing_right = self.next_direction
 
 
     #update
@@ -216,13 +249,49 @@ class Hedgehog:
 
   
 
+    # def draw(self, screen):
+    #     if self.turning:
+    #         image_to_draw = self.rolled_image
+    #     else:
+    #         if self.facing_right:
+    #             image_to_draw = pygame.transform.flip(
+    #                 self.image,
+    #                 True,
+    #                 False
+    #             )
+    #         else:
+    #             image_to_draw = self.image
+
+    #     if self.facing_right:
+    #         image_to_draw = pygame.transform.flip(
+    #             self.image,
+    #             True,
+    #             False
+    #         )
+    #     else:
+    #         image_to_draw = self.image
+
+    #     image_rect = image_to_draw.get_rect(
+    #         center=self.position
+    #     )
+
+    #     screen.blit(
+    #         image_to_draw,
+    #         image_rect
+    #     )
+
+
     def draw(self, screen):
-        if self.facing_right:
+        if self.turning:
+            image_to_draw = self.rolled_image
+
+        elif self.facing_right:
             image_to_draw = pygame.transform.flip(
                 self.image,
                 True,
                 False
             )
+
         else:
             image_to_draw = self.image
 
@@ -233,4 +302,4 @@ class Hedgehog:
         screen.blit(
             image_to_draw,
             image_rect
-        )
+    )
