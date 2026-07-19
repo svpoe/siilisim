@@ -1,5 +1,5 @@
 """
-Purpose: run and coordinate the world
+Purpose: simulation loop - run and coordinate the world
 - initialize Pygame
 - create the mother, baby, and strawberries
 - process events
@@ -13,6 +13,7 @@ import pygame
 import random
 import math
 from hedgehog import Hedgehog
+from strawberry import Strawberry
 
 WIDTH = 1000
 HEIGHT = 700
@@ -29,7 +30,9 @@ def main():
 
 
     # random_nudge_timer = 0.0
-    mother = Hedgehog(image_path="assets/hedgehog_body.png", position=(WIDTH / 2, HEIGHT / 2))
+    mother = Hedgehog( position=(WIDTH / 2, HEIGHT / 2))
+    strawberry = Strawberry(position=(WIDTH / 2 + 50, HEIGHT / 2 + 50))
+    strawberry2 = Strawberry(position=(WIDTH / 2 + 200, HEIGHT / 2 + 30))
     #baby= Hedgehog(image_path="assets/hedgehog_body.png", position=(WIDTH / 2 + 50, HEIGHT / 2 + 50))
     running = True
     while running:
@@ -39,16 +42,19 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
-        mother.update(dt, WIDTH, HEIGHT)
-
-       #baby.update(dt, WIDTH, HEIGHT)
-
+        mother.update(dt, WIDTH, HEIGHT, strawberries = [])
+        
+    
+        #baby.update(dt, WIDTH, HEIGHT, strawberries = [])
+        
         
        
         screen.fill(GRASS_COLOR)
        
         screen.blit(pygame.image.load("assets/grass.png"), (0, 0))
         mother.draw(screen)
+        strawberry.draw(screen)
+        strawberry2.draw(screen)
         #baby.draw(screen)
         pygame.display.flip()
 
