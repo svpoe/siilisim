@@ -19,6 +19,7 @@ class Hedgehog:
         # These are copied from your main.py
         
         self.state = HedgehogState.WANDERING
+        self.target = None
         self.position = pygame.Vector2(position)
         self.velocity = pygame.Vector2(100, 60)
 
@@ -43,6 +44,7 @@ class Hedgehog:
         self.rolled_image = pygame.image.load("assets/hedgehog_rolled.png").convert_alpha()
         self.rolled_image = pygame.transform.smoothscale(self.rolled_image,(70*2,70*2   ))
 
+        self.rectangle = self.image.get_rect(center=self.position)
 
 
   # Getting info from enviornment
@@ -50,16 +52,19 @@ class Hedgehog:
 
         self.update_state(strawberries)
 
-        behavior_force = self.get_behavior_steering(dt)
+        behavior_force = self.get_behavior_force(dt)
 
         wall_force = get_wall_repulsion(self.position, world_width, world_height)
 
         steering = behavior_force + wall_force
 
         self.apply_steering(steering, dt)
-        self.uppdate_turning(dt)
+        self.update_turning(dt)
 
         self.position += self.velocity * dt
+        
+        # self.collision_rect.center = self.position
+        self.rectangle.center = self.position
 
         
     # returns main wandering steering direction
@@ -93,46 +98,68 @@ class Hedgehog:
         return direction.normalize()
     
     
-    def get_behavior_steering(self, dt):
+    def get_behavior_force(self, dt):
         if self.state == HedgehogState.WANDERING:
             return self.wandering_behavior(dt)
 
         elif self.state == HedgehogState.SEEKING_STRAWBERRY:
             return self.seek_strawberry_behavior()
 
-        elif self.state == HedgehogState.EATING:
-            return self.eating_behavior(dt)
+        # elif self.state == HedgehogState.EATING:
+        #     return self.eating_behavior(dt)
 
         return pygame.Vector2()
     
+
+
     def update_state(self, strawberries):
         if self.state == HedgehogState.WANDERING:
-            target = self.find_nearest_ripe_strawberry(
-                strawberries
-            )
-
-            if target is not None:
-                self.target = target
+            nearest = self.find_nearest_strawberry(strawberries)
+            if nearest is not None:
+                self.target = nearest
                 self.state = HedgehogState.SEEKING_STRAWBERRY
 
         elif self.state == HedgehogState.SEEKING_STRAWBERRY:
-            if self.target is None or not self.target.ripe:
+            if self.target not in strawberries:
                 self.target = None
                 self.state = HedgehogState.WANDERING
                 return
 
-            distance = self.position.distance_to(
-                self.target.position
-            )
-
-            if distance < self.eating_distance:
-                self.state = HedgehogState.EATING
-                self.eating_timer = 0.0
-
-        elif self.state == HedgehogState.EATING:
-            if self.eating_timer >= self.eating_duration:
+            # bounding boxes overlap → eat strawberry → return to WANDERING
+            if self.rectangle.colliderect(self.target.rect):
+                strawberries.remove(self.target)
                 self.target = None
                 self.state = HedgehogState.WANDERING
+
+
+    # def update_state1(self, strawberries):
+    #     if self.state == HedgehogState.WANDERING:
+    #         target = self.find_nearest_ripe_strawberry(
+    #             strawberries
+    #         )
+
+    #         if target is not None:
+    #             self.target = target
+    #             self.state = HedgehogState.SEEKING_STRAWBERRY
+
+    #     elif self.state == HedgehogState.SEEKING_STRAWBERRY:
+    #         if self.target is None or not self.target.ripe:
+    #             self.target = None
+    #             self.state = HedgehogState.WANDERING
+    #             return
+
+    #         distance = self.position.distance_to(
+    #             self.target.position
+    #         )
+
+    #         if distance < self.eating_distance:
+    #             self.state = HedgehogState.EATING
+    #             self.eating_timer = 0.0
+
+    #     elif self.state == HedgehogState.EATING:
+    #         if self.eating_timer >= self.eating_duration:
+    #             self.target = None
+    #             self.state = HedgehogState.WANDERING
 
 
     def find_nearest_ripe_strawberry(self, strawberries):
@@ -158,7 +185,7 @@ class Hedgehog:
         turning_speed = 2.0
         self.velocity += (desired_velocity - self.velocity) * turning_speed * dt
 
-    def uppdate_turning(self, dt):
+    def update_turning(self, dt):
         if self.velocity.x > 0 and not self.facing_right:
             self.turning = True
             self.turn_timer = 0.0
@@ -173,9 +200,10 @@ class Hedgehog:
             self.turn_timer += dt
             if self.turn_timer >= self.turn_duration:
                 self.turning = False
-    def eating_behavior(self, dt):
-        self.eating_timer += dt
-        return pygame.Vector2()
+
+    # def eating_behavior(self, dt):
+    #     self.eating_timer += dt
+    #     return pygame.Vector2()
     
 
     def draw(self, screen):
@@ -188,3 +216,39 @@ class Hedgehog:
 
         image_rect = image_to_draw.get_rect(center=self.position)
         screen.blit(image_to_draw, image_rect)
+
+
+    ## STRAWBERRY SEEKING
+
+
+    # calculate the distance to every strawberry
+    # keep the one with the smallest distance
+
+    def find_nearest_strawberry(self, strawberries):
+        nearest = None
+        nearest_distance = float("inf")
+
+        for strawberry in strawberries:
+            distance = self.position.distance_to(
+                strawberry.position
+            )
+
+            if distance < nearest_distance:
+                nearest = strawberry
+                nearest_distance = distance
+
+        return nearest
+    
+    def seek_behavior(self):
+        if self.target is None:
+            return pygame.Vector2()
+
+        direction = (
+            self.target.position
+            - self.position
+        )
+
+        if direction.length_squared() == 0:
+            return pygame.Vector2()
+
+        return direction.normalize()

@@ -31,9 +31,14 @@ def main():
 
     # random_nudge_timer = 0.0
     mother = Hedgehog( position=(WIDTH / 2, HEIGHT / 2))
-    strawberry = Strawberry(position=(WIDTH / 2 + 50, HEIGHT / 2 + 50))
-    strawberry2 = Strawberry(position=(WIDTH / 2 + 200, HEIGHT / 2 + 30))
+    strawberries = [
+        Strawberry(position=(WIDTH / 2 + 50, HEIGHT / 2 + 50)),
+        Strawberry(position=(WIDTH / 2 + 200, HEIGHT / 2 + 30)),
+    ]
     #baby= Hedgehog(image_path="assets/hedgehog_body.png", position=(WIDTH / 2 + 50, HEIGHT / 2 + 50))
+    spawn_timer = 0.0
+    SPAWN_INTERVAL = 3.0
+    MARGIN = 50
     running = True
     while running:
          # Time since the previous frame, in seconds
@@ -42,7 +47,14 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
-        mother.update(dt, WIDTH, HEIGHT, strawberries = [])
+        spawn_timer += dt
+        if spawn_timer >= SPAWN_INTERVAL:
+            spawn_timer = 0.0
+            x = random.randint(MARGIN, WIDTH - MARGIN)
+            y = random.randint(MARGIN, HEIGHT - MARGIN)
+            strawberries.append(Strawberry(position=(x, y)))
+
+        mother.update(dt, WIDTH, HEIGHT, strawberries)
         
     
         #baby.update(dt, WIDTH, HEIGHT, strawberries = [])
@@ -53,8 +65,8 @@ def main():
        
         screen.blit(pygame.image.load("assets/grass.png"), (0, 0))
         mother.draw(screen)
-        strawberry.draw(screen)
-        strawberry2.draw(screen)
+        for s in strawberries:
+            s.draw(screen)
         #baby.draw(screen)
         pygame.display.flip()
 
