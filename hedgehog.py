@@ -21,26 +21,24 @@ class Hedgehog:
         self.state = HedgehogState.WANDERING
         self.target = None
         self.position = pygame.Vector2(position)
-        self.velocity = pygame.Vector2(100, 60)
-
+        self.velocity = pygame.Vector2(100, 60) # random starting direction
 
         # INTERNAL INFO
         self.wander_angle = 0.0
         self.speed = 80
         self.random_nudge_timer = 2.0
+        self.foot_phase = 0.0
+        self.foot_cycle_speed = 10.0
+        self.min_walk_speed = 12.0
         #adding variables for flipping image
         self.facing_right = False
         self.turning = False
         self.turn_timer = 0.0
         self.turn_duration = 0.5
 
-
         # LOADING IMAGE
         self.image = pygame.image.load("assets/hedgehog_body.png").convert_alpha()
-        # Resize it if needed
-        # self.image = pygame.transform.smoothscale(self.image,(100, 65))
         self.image = pygame.transform.smoothscale(self.image,(100*2, 65*2))
-        #load rolled hedgehog
         self.rolled_image = pygame.image.load("assets/hedgehog_rolled.png").convert_alpha()
         self.rolled_image = pygame.transform.smoothscale(self.rolled_image,(70*2,70*2   ))
 
@@ -52,18 +50,16 @@ class Hedgehog:
 
         self.update_state(strawberries)
 
-        behavior_force = self.get_behavior_force(dt)
-
+        # CALCULATE steering force
+        behavior_force = self.get_behavior_force(dt) # gets steering direction based on current state
         wall_force = get_wall_repulsion(self.position, world_width, world_height)
-
         steering = behavior_force + wall_force
-
         self.apply_steering(steering, dt)
+
         self.update_turning(dt)
+        self.update_feet_animation(dt)
 
         self.position += self.velocity * dt
-        
-        # self.collision_rect.center = self.position
         self.rectangle.center = self.position
 
         
@@ -73,7 +69,8 @@ class Hedgehog:
 
         self.random_nudge_timer += dt
 
-        if self.random_nudge_timer >= 3.0:
+        # ADDS randomness to wandering behavior every 3 sec 
+        if self.random_nudge_timer >= 3.0: 
             # keep movement at -90 to +90 from current dir
         
             self.wander_angle += random.uniform(
@@ -85,28 +82,15 @@ class Hedgehog:
 
         return pygame.Vector2(math.cos(self.wander_angle),math.sin(self.wander_angle))
     
-
-    def seek_strawberry_behavior(self):
-        if self.target is None:
-            return pygame.Vector2()
-        
-        direction = self.target.position - self.position
-
-        #hedgehot already at target
-        if direction.length_squared() == 0:
-            return pygame.Vector2()
-        return direction.normalize()
     
     
+    # GETTING direction based on current state
     def get_behavior_force(self, dt):
         if self.state == HedgehogState.WANDERING:
             return self.wandering_behavior(dt)
 
         elif self.state == HedgehogState.SEEKING_STRAWBERRY:
             return self.seek_strawberry_behavior()
-
-        # elif self.state == HedgehogState.EATING:
-        #     return self.eating_behavior(dt)
 
         return pygame.Vector2()
     
@@ -132,49 +116,6 @@ class Hedgehog:
                 self.state = HedgehogState.WANDERING
 
 
-    # def update_state1(self, strawberries):
-    #     if self.state == HedgehogState.WANDERING:
-    #         target = self.find_nearest_ripe_strawberry(
-    #             strawberries
-    #         )
-
-    #         if target is not None:
-    #             self.target = target
-    #             self.state = HedgehogState.SEEKING_STRAWBERRY
-
-    #     elif self.state == HedgehogState.SEEKING_STRAWBERRY:
-    #         if self.target is None or not self.target.ripe:
-    #             self.target = None
-    #             self.state = HedgehogState.WANDERING
-    #             return
-
-    #         distance = self.position.distance_to(
-    #             self.target.position
-    #         )
-
-    #         if distance < self.eating_distance:
-    #             self.state = HedgehogState.EATING
-    #             self.eating_timer = 0.0
-
-    #     elif self.state == HedgehogState.EATING:
-    #         if self.eating_timer >= self.eating_duration:
-    #             self.target = None
-    #             self.state = HedgehogState.WANDERING
-
-
-    def find_nearest_ripe_strawberry(self, strawberries):
-        nearest = None
-        nearest_dist_sq = float('inf')
-        for s in strawberries:
-            if not s.ripe:
-                continue
-
-            d_sq = (s.position - self.position).length_squared()
-            if d_sq < nearest_dist_sq:
-                nearest_dist_sq = d_sq
-                nearest = s
-
-        return nearest
 
     def apply_steering(self, steering, dt):
         if steering.length_squared() > 0:
@@ -201,12 +142,83 @@ class Hedgehog:
             if self.turn_timer >= self.turn_duration:
                 self.turning = False
 
-    # def eating_behavior(self, dt):
-    #     self.eating_timer += dt
-    #     return pygame.Vector2()
-    
+    def update_feet_animation(self, dt):
+        speed = self.velocity.length()
+        if speed <= self.min_walk_speed or self.turning:
+            return
+
+        cycle_scale = min(speed / self.speed, 1.5)
+        self.foot_phase += dt * self.foot_cycle_speed * cycle_scale
+
+
+    def draw_feet(self, screen):
+        if self.turning:
+            return
+
+        speed = self.velocity.length()
+        swing = math.sin(self.foot_phase) if speed > self.min_walk_speed else 0.0
+
+        base_y = self.position.y + 50
+
+        front_offset_x = 28 if self.facing_right else -28
+        rear_offset_x = -35 if self.facing_right else 35
+
+        front_x = self.position.x + front_offset_x + swing * 3
+        rear_x  = self.position.x + rear_offset_x  - swing * 3
+
+        front_y = base_y - max(0.0, swing) * 3
+        rear_y  = base_y - max(0.0, -swing) * 3
+
+        foot_color = (80, 65, 55)
+
+        foot_width = 6
+        foot_height = 8
+        foot_gap = 4      # distance between the two feet
+
+        # Front feet
+        pygame.draw.ellipse(
+            screen, foot_color,
+            pygame.Rect(front_x - foot_gap, front_y - 3, foot_width, foot_height)
+        )
+        pygame.draw.ellipse(
+            screen, foot_color,
+            pygame.Rect(front_x + foot_gap, front_y - 3, foot_width, foot_height)
+        )
+
+        # Rear feet
+        pygame.draw.ellipse(
+            screen, foot_color,
+            pygame.Rect(rear_x - foot_gap, rear_y - 5, foot_width, foot_height)
+        )
+        pygame.draw.ellipse(
+            screen, foot_color,
+            pygame.Rect(rear_x + foot_gap, rear_y - 5, foot_width, foot_height)
+        )
+        
+    # def draw_feet(self, screen):
+    #     if self.turning:
+    #         return
+
+    #     speed = self.velocity.length()
+    #     swing = math.sin(self.foot_phase) if speed > self.min_walk_speed else 0.0
+
+    #     base_y = self.position.y + 50
+    #     front_offset_x = 28 if self.facing_right else -28
+    #     rear_offset_x = -12 if self.facing_right else 12
+
+    #     front_x = self.position.x + front_offset_x + swing * 3
+    #     rear_x = self.position.x + rear_offset_x - swing * 3
+    #     front_y = base_y - max(0.0, swing) * 3
+    #     rear_y = base_y - max(0.0, -swing) * 3
+
+    #     foot_color = (80, 65, 55)
+    #     pygame.draw.ellipse(screen, foot_color, pygame.Rect(front_x - 6, front_y - 3, 6, 8))
+    #     pygame.draw.ellipse(screen, foot_color, pygame.Rect(rear_x - 10, rear_y - 3, 6, 8))
+
 
     def draw(self, screen):
+        self.draw_feet(screen)
+
         if self.turning:
             image_to_draw = self.rolled_image
         elif self.facing_right:
@@ -219,36 +231,65 @@ class Hedgehog:
 
 
     ## STRAWBERRY SEEKING
-
-
-    # calculate the distance to every strawberry
-    # keep the one with the smallest distance
-
+    # CALCULATE the distance to every strawberry, target the one with the smallest distance
+    # def find_nearest_strawberry(self, strawberries):
+    #     nearest = None
+    #     nearest_distance = float("inf")
+    #
+    #     for strawberry in strawberries:
+    #         distance = self.position.distance_to(
+    #             strawberry.position
+    #         ) 
+    #
+    #         if distance < nearest_distance:
+    #             nearest = strawberry
+    #             nearest_distance = distance
+    #
+    #     return nearest
+    
     def find_nearest_strawberry(self, strawberries):
         nearest = None
-        nearest_distance = float("inf")
+        nearest_dist_sq = float('inf')
+        for s in strawberries:
 
-        for strawberry in strawberries:
-            distance = self.position.distance_to(
-                strawberry.position
-            )
-
-            if distance < nearest_distance:
-                nearest = strawberry
-                nearest_distance = distance
+            d_sq = (s.position - self.position).length_squared()
+            if d_sq < nearest_dist_sq:
+                nearest_dist_sq = d_sq
+                nearest = s
 
         return nearest
+
     
-    def seek_behavior(self):
+
+    def seek_strawberry_behavior(self):
         if self.target is None:
             return pygame.Vector2()
+        
+        direction = self.target.position - self.position
 
-        direction = (
-            self.target.position
-            - self.position
+        #checking if hedgehog already at target
+        if direction.length_squared() == 0: 
+            return pygame.Vector2()
+        
+        return direction.normalize()
+
+
+class Baby(Hedgehog):
+    def __init__(self, position, scale=0.6):
+        super().__init__(position)
+        self.speed = 50
+        body_size = (
+            int(self.image.get_width() * scale),
+            int(self.image.get_height() * scale),
+        )
+        rolled_size = (
+            int(self.rolled_image.get_width() * scale),
+            int(self.rolled_image.get_height() * scale),
         )
 
-        if direction.length_squared() == 0:
-            return pygame.Vector2()
+        self.image = pygame.transform.smoothscale(self.image, body_size)
+        self.rolled_image = pygame.transform.smoothscale(self.rolled_image, rolled_size)
+        self.rectangle = self.image.get_rect(center=self.position)
 
-        return direction.normalize()
+    def draw_feet(self, screen):
+        return

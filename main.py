@@ -11,8 +11,8 @@ Purpose: simulation loop - run and coordinate the world
 
 import pygame
 import random
-import math
-from hedgehog import Hedgehog
+# import math
+from hedgehog import Hedgehog, Baby
 from strawberry import Strawberry
 
 WIDTH = 1000
@@ -34,11 +34,13 @@ def main():
     strawberries = [
         Strawberry(position=(WIDTH / 2 + 50, HEIGHT / 2 + 50)),
         Strawberry(position=(WIDTH / 2 + 200, HEIGHT / 2 + 30)),
+    
     ]
-    #baby= Hedgehog(image_path="assets/hedgehog_body.png", position=(WIDTH / 2 + 50, HEIGHT / 2 + 50))
+   # baby = Baby(position=(WIDTH / 2 + 200, HEIGHT / 2 + 40))
     spawn_timer = 0.0
     SPAWN_INTERVAL = 3.0
-    MARGIN = 50
+    # Match wall-repulsion margin so strawberries spawn in reachable space.
+    MARGIN = 200
     running = True
     while running:
          # Time since the previous frame, in seconds
@@ -57,7 +59,7 @@ def main():
         mother.update(dt, WIDTH, HEIGHT, strawberries)
         
     
-        #baby.update(dt, WIDTH, HEIGHT, strawberries = [])
+       # baby.update(dt, WIDTH, HEIGHT, strawberries)
         
         
        
