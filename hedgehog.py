@@ -126,6 +126,7 @@ class Hedgehog:
         turning_speed = 2.0
         self.velocity += (desired_velocity - self.velocity) * turning_speed * dt
 
+
     def update_turning(self, dt):
         if self.velocity.x > 0 and not self.facing_right:
             self.turning = True
@@ -195,26 +196,6 @@ class Hedgehog:
             pygame.Rect(rear_x + foot_gap, rear_y - 5, foot_width, foot_height)
         )
         
-    # def draw_feet(self, screen):
-    #     if self.turning:
-    #         return
-
-    #     speed = self.velocity.length()
-    #     swing = math.sin(self.foot_phase) if speed > self.min_walk_speed else 0.0
-
-    #     base_y = self.position.y + 50
-    #     front_offset_x = 28 if self.facing_right else -28
-    #     rear_offset_x = -12 if self.facing_right else 12
-
-    #     front_x = self.position.x + front_offset_x + swing * 3
-    #     rear_x = self.position.x + rear_offset_x - swing * 3
-    #     front_y = base_y - max(0.0, swing) * 3
-    #     rear_y = base_y - max(0.0, -swing) * 3
-
-    #     foot_color = (80, 65, 55)
-    #     pygame.draw.ellipse(screen, foot_color, pygame.Rect(front_x - 6, front_y - 3, 6, 8))
-    #     pygame.draw.ellipse(screen, foot_color, pygame.Rect(rear_x - 10, rear_y - 3, 6, 8))
-
 
     def draw(self, screen):
         self.draw_feet(screen)
@@ -232,23 +213,9 @@ class Hedgehog:
 
     ## STRAWBERRY SEEKING
     # CALCULATE the distance to every strawberry, target the one with the smallest distance
-    # def find_nearest_strawberry(self, strawberries):
-    #     nearest = None
-    #     nearest_distance = float("inf")
-    #
-    #     for strawberry in strawberries:
-    #         distance = self.position.distance_to(
-    #             strawberry.position
-    #         ) 
-    #
-    #         if distance < nearest_distance:
-    #             nearest = strawberry
-    #             nearest_distance = distance
-    #
-    #     return nearest
-    
+
     def find_nearest_strawberry(self, strawberries):
-        nearest = None
+        nearest = None 
         nearest_dist_sq = float('inf')
         for s in strawberries:
 
@@ -274,6 +241,7 @@ class Hedgehog:
         return direction.normalize()
 
 
+
 class Baby(Hedgehog):
     def __init__(self, position, scale=0.6):
         super().__init__(position)
@@ -293,3 +261,7 @@ class Baby(Hedgehog):
 
     def draw_feet(self, screen):
         return
+    
+
+
+

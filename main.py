@@ -25,7 +25,7 @@ GRASS_COLOR = (104,159,80)
 def main():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Hedgehog Simulator")
+    pygame.display.set_caption("SiiliSim")
     clock = pygame.time.Clock()
 
 
@@ -39,7 +39,7 @@ def main():
    # baby = Baby(position=(WIDTH / 2 + 200, HEIGHT / 2 + 40))
     spawn_timer = 0.0
     SPAWN_INTERVAL = 3.0
-    # Match wall-repulsion margin so strawberries spawn in reachable space.
+    # Match wall-repulsion margin so strawberries spawn in reachable space
     MARGIN = 200
     running = True
     while running:
