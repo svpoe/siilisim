@@ -7,7 +7,7 @@ from enum import Enum, auto
 class HedgehogState(Enum):
     WANDERING = auto()
     SEEKING_STRAWBERRY = auto()
-    EATING = auto()
+    # EATING = auto()
 
 
     
