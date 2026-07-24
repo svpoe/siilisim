@@ -10,7 +10,7 @@ Autonomous agent
 import pygame
 import random
 import math
-from steering import get_wall_repulsion
+from wall_repulsion import get_wall_repulsion
 from states import HedgehogState
 
 
