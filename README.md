@@ -4,7 +4,7 @@ A simple autonomous hedgehog built in **Python** using **Pygame**. The hedgehog 
 
 For a demo please see: https://www.tiktok.com/@minimarenki/video/7665383347270536479?is_from_webapp=1&sender_device=pc
 
-![Siili demo](demo/siilidemo-1.mp4)
+![Siili demo](demo/siili-demo.gif)
 
 ## Features
 
