@@ -21,8 +21,8 @@ class Hedgehog:
         self.state = HedgehogState.WANDERING
         self.target = None
         self.position = pygame.Vector2(position)
-        self.velocity = pygame.Vector2(100, 60) # random starting direction
-
+        self.velocity = pygame.Vector2(100, 60) # random starting dir
+        
         # INTERNAL INFO
         self.wander_angle = 0.0
         self.speed = 80
@@ -119,7 +119,6 @@ class Hedgehog:
 
 
     def apply_steering(self, steering, dt):
-        #check if steering vector is not zero to avoid division by zero error
         if steering.length_squared() > 0:
             desired_velocity = steering.normalize() * self.speed
         else:

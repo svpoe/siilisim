@@ -2,8 +2,10 @@
 
 A simple autonomous hedgehog built in **Python** using **Pygame**. The hedgehog explores its environment independently, searches for the nearest strawberry, avoids walls using steering behaviors, and removes strawberries upon collision.
 
-For a demo please see: https://www.tiktok.com/t/ZP8t94sP6/ 
- 
+For a demo please see: https://www.tiktok.com/@minimarenki/video/7665383347270536479?is_from_webapp=1&sender_device=pc
+
+![Siili demo](demo/siilidemo-1.gif)
+
 ## Features
 
 * Autonomous hedgehog behavior (no player input)
